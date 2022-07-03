@@ -1,0 +1,8 @@
+{
+  "name": "matgip-backend-typescript",
+  "version": "1.0.0",
+  "main": "backend/app.ts",
+  "repository": "https://github.com/junhong91/matgip-backend-typescript.git",
+  "author": "junhong91 <junhong199@gmail.com>",
+  "license": "MIT"
+}

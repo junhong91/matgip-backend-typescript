@@ -8,14 +8,18 @@ export type AgencyType = {
   phone: string;
   placeName: string;
   addressName: string;
+  likes?: number;
+  stars?: number;
+  views?: number;
+  reviewCount?: number;
 };
 
 type ViewUserEntityType = {
-  id: string; // user id
+  id: number; // user id
   ageRange: string; // user age range
 };
 
-export type AgencyViewType = {
+export type ReqAgencyViewType = {
   id: number; // agency id
   user: ViewUserEntityType;
   addressName: string;
@@ -37,4 +41,9 @@ export type TopHitAgencyType = {
 export type TopHitAreaType = {
   areaName: string;
   views: number;
+};
+
+export type UserLikeAgencyOpType = {
+  userId: number;
+  operation: string;
 };

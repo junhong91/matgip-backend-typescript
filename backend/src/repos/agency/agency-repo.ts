@@ -1,11 +1,12 @@
 import {
   AgencyType,
-  AgencyViewType,
+  ReqAgencyViewType,
   TopHitAgencyType,
   TopHitAreaType,
+  UserLikeAgencyOpType,
 } from "@models/agency-model";
 
-export interface AgencyRepository {
+export interface IAgencyRepo {
   /**
    * 부동산 정보를 저장합니다.
    * @param {AgencyType} agency 부동산 정보
@@ -39,21 +40,15 @@ export interface AgencyRepository {
 
   /**
    * agencyId에 일치하는 부동산 정보를 반환합니다.
-   * @param {string} id 부동산 Id
+   * @param {number} id 부동산 Id
    */
-  get(id: string): Promise<AgencyType>;
+  get(id: number): Promise<AgencyType>;
 
   /**
    * agencyId에 일치하는 부동산 조회수를 반환합니다.
    * @param {number} id 검색할 부동산 Id
    */
   getViews(id: number): Promise<number>;
-
-  /**
-   * agencyId에 일치하는 부동산 '좋아요' 개수를 반환합니다.
-   * @param {number} id 검색할 부동산 Id
-   */
-  getLikes(id: number): Promise<number>;
 
   /**
    * 조회수가 가장 높은 최대 상위 15개 부동산 정보를 반환합니다.
@@ -70,14 +65,17 @@ export interface AgencyRepository {
   /**
    * 실시간으로 선택된 부동산의 view count를 1 증가 시킵니다.
    * 동일한 user는 24시간이 지난 후에 view count가 1 증가됩니다.(24 이전 중복 불가)
-   * @param agencyViewType
+   * @param reqAgencyView
    */
-  mergeViews(agencyViewType: AgencyViewType): Promise<void>;
+  mergeViews(reqAgencyView: ReqAgencyViewType): Promise<void>;
 
   /**
    *
    * @param agencyId
-   * @param userId
+   * @param userLikeAgencyOpType
    */
-  mergeLikes(agencyId: string, userId: string): Promise<void>;
+  mergeLikes(
+    agencyId: string,
+    userLikeAgencyOpType: UserLikeAgencyOpType
+  ): Promise<void>;
 }

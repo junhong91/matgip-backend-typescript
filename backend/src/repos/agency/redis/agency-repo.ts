@@ -6,6 +6,8 @@ import {
   TopHitAreaType,
   UserLikeAgencyOpType,
 } from "@models/agency-model";
+import { ResponseType } from "../response";
+import * as SORTEDSET from "./redis-response";
 import { IAgencyRepo } from "../agency-repo";
 
 let baseTime: string = new Date().toLocaleDateString();
@@ -18,11 +20,6 @@ function flush() {
     .exec();
 }
 setInterval(flush, 24 * 3600 * 1000);
-
-type ScoreValueType = {
-  value: string; // Format => agency:${id}
-  score: number;
-};
 
 export class RedisAgencyRepoImpl implements IAgencyRepo {
   /**
@@ -247,33 +244,40 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
    * @param userLikeAgencyOpType
    */
   async mergeLikes(
-    agencyId: string,
+    agencyId: number,
     userLikeAgencyOpType: UserLikeAgencyOpType
-  ): Promise<void> {
+  ): Promise<ResponseType> {
     const { userId, operation } = userLikeAgencyOpType;
-    if (!(await this.isValidOperation(operation, { agencyId, userId })))
-      return { result: "failed" };
+    const responser = new SORTEDSET.ResponseImpl<number>(1, -1);
+    if (!(await this.isValidOperation(operation, agencyId, userId)))
+      return responser.toServiceResponse(-2);
     if (operation === "increase") {
       // 부동산 '좋아요'
-      const result = await client.SADD(
+      const result = (await client.SADD(
         `agency:${agencyId}:likes`,
         `user:${userId}`
-      );
-      return { result: sortedSet.toString(result) };
+      )) as number;
+      return responser.toServiceResponse(result);
     } else {
       // 부동산 '좋아요' 취소
-      const result = await client.SREM(
+      const result = (await client.SREM(
         `agency:${agencyId}:likes`,
         `user:${userId}`
-      );
-      return { result: sortedSet.toString(result) };
+      )) as number;
+      return responser.toServiceResponse(result);
     }
   }
 
-  private isValidOperation(
+  private async isValidOperation(
     operation: string,
-    agencyUserId: AgencyUserIdType
-  ): boolean {}
+    agencyId: number,
+    userId: number
+  ): Promise<boolean> {
+    const isUserLike = await this.isUserLikeThisAgency(agencyId, userId);
+    if (isUserLike && operation === "decrease") return true;
+    if (!isUserLike && operation === "increase") return true;
+    return false;
+  }
 
   /**
    * user:{userId}가 agency:{agencyId}를 좋아하는지 확인합니다.

@@ -5,18 +5,18 @@ export type AgencyType = {
   id: number;
   y: number;
   x: number;
-  phone: string;
-  placeName: string;
-  addressName: string;
+  phone?: string;
+  placeName?: string;
+  addressName?: string;
   likes?: number;
   stars?: number;
   views?: number;
   reviewCount?: number;
 };
 
-type ViewUserEntityType = {
+export type ViewUserEntityType = {
   id: number; // user id
-  ageRange: string; // user age range
+  ageRange: string; // format => "from~to" (e.g. 20~29)
 };
 
 export type ReqAgencyViewType = {

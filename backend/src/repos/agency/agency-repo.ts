@@ -6,6 +6,8 @@ import {
   UserLikeAgencyOpType,
 } from "@models/agency-model";
 
+import { ResponseType } from "./response";
+
 export interface IAgencyRepo {
   /**
    * 부동산 정보를 저장합니다.
@@ -75,7 +77,7 @@ export interface IAgencyRepo {
    * @param userLikeAgencyOpType
    */
   mergeLikes(
-    agencyId: string,
+    agencyId: number,
     userLikeAgencyOpType: UserLikeAgencyOpType
-  ): Promise<void>;
+  ): Promise<ResponseType>;
 }

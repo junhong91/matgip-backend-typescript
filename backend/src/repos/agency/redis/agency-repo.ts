@@ -1,13 +1,7 @@
 import { client } from "../../../config/redis/client";
-import {
-  AgencyType,
-  ReqAgencyViewType,
-  TopHitAgencyType,
-  TopHitAreaType,
-  UserLikeAgencyOpType,
-} from "@models/agency-model";
+import * as Model from "@models/agency-model";
 import { ResponseType } from "../response";
-import * as SORTEDSET from "./redis-response";
+import * as Responser from "./redis-response";
 import { IAgencyRepo } from "../agency-repo";
 
 let baseTime: string = new Date().toLocaleDateString();
@@ -26,7 +20,7 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
    * 부동산 정보를 저장합니다.
    * @param {AgencyType} agency 부동산 정보
    */
-  async persist(agency: AgencyType): Promise<void> {
+  async persist(agency: Model.AgencyType): Promise<void> {
     await client
       .multi()
       .HSET(`agency:${agency.id}`, "id", agency.id)
@@ -56,12 +50,12 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
    * 검색 키워드 기준 반경, 부동산을 검색합니다.
    * @param {string} keyword 검색 키워드
    */
-  async searchByKeyword(keyword: string): Promise<AgencyType[]> {
+  async searchByKeyword(keyword: string): Promise<Model.AgencyType[]> {
     const ids = await client.SMEMBERS(`agencies_keyword:${keyword}`);
-    const agencies: AgencyType[] = [];
+    const agencies: Model.AgencyType[] = [];
     await Promise.all(
       ids.map(async (id: any) => {
-        const agency = (await this.get(+id)) as AgencyType;
+        const agency = (await this.get(+id)) as Model.AgencyType;
         agencies.push(agency);
       })
     );
@@ -78,16 +72,16 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
     lat: number,
     lng: number,
     radius: number
-  ): Promise<AgencyType[]> {
+  ): Promise<Model.AgencyType[]> {
     const ids = await client.GEOSEARCH(
       "agency",
       { latitude: lat, longitude: lng },
       { radius: radius, unit: "m" }
     );
-    const agencies: AgencyType[] = [];
+    const agencies: Model.AgencyType[] = [];
     await Promise.all(
       ids.map(async (id: any) => {
-        const agency = (await this.get(+id)) as AgencyType;
+        const agency = (await this.get(+id)) as Model.AgencyType;
         agencies.push(agency);
       })
     );
@@ -98,8 +92,8 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
    * agencyId에 일치하는 부동산 정보를 반환합니다.
    * @param {number} id 부동산 Id
    */
-  async get(id: number): Promise<AgencyType> {
-    const agency = (await client.HGETALL(`agency:${id}`)) as AgencyType;
+  async get(id: number): Promise<Model.AgencyType> {
+    const agency = (await client.HGETALL(`agency:${id}`)) as Model.AgencyType;
     // REFACTORING: Combining (likes/stars) into agency
     agency.likes = 0;
     agency.stars = 0.0;
@@ -119,7 +113,7 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
     return agency;
   }
 
-  private isEmpty(agency: AgencyType): boolean {
+  private isEmpty(agency: Model.AgencyType): boolean {
     return (
       !agency.id ||
       !agency.y ||
@@ -142,7 +136,7 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
    * 조회수가 가장 높은 최대 상위 15개 부동산 정보를 반환합니다.
    * @param {string} query Fetch할 부동산 개수(15개)
    */
-  async getTopHitAgencies(query: string): Promise<TopHitAgencyType[]> {
+  async getTopHitAgencies(query: string): Promise<Model.TopHitAgencyType[]> {
     const range: string[] = query.split("~");
     const scoreValues = (await client.ZRANGE_WITHSCORES(
       "realtime_agencies_views",
@@ -151,11 +145,11 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
       { REV: true }
     )) as any[];
 
-    const topHitAgencies: TopHitAgencyType[] = [];
+    const topHitAgencies: Model.TopHitAgencyType[] = [];
     await Promise.all(
       scoreValues.map(async (scoreValue: any) => {
         const agencyId = +scoreValue.value.split(":")[1];
-        const agency = (await this.get(agencyId)) as AgencyType;
+        const agency = (await this.get(agencyId)) as Model.AgencyType;
         topHitAgencies.push({
           baseTime: baseTime,
           agencyName: agency.placeName,
@@ -171,7 +165,7 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
    * 조회수가 높은 지역의 최대 상위 15개 정보를 반환합니다.
    * @param {string} query Fetch할 장소 개수(15개)
    */
-  async getTopHitAreas(query: string): Promise<TopHitAreaType[]> {
+  async getTopHitAreas(query: string): Promise<Model.TopHitAreaType[]> {
     const range: string[] = query.split("~");
     const scoreValues = (await client.ZRANGE_WITHSCORES(
       "realtime_area_views",
@@ -182,7 +176,7 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
       }
     )) as any[];
 
-    const topHitAreas: TopHitAreaType[] = [];
+    const topHitAreas: Model.TopHitAreaType[] = [];
     await Promise.all(
       scoreValues.map(async (scoreValue) => {
         const areaName = scoreValue.value.split(":")[1];
@@ -200,7 +194,7 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
    * 동일한 user는 24시간이 지난 후에 view count가 1 증가됩니다.(24 이전 중복 불가)
    * @param reqAgencyView
    */
-  async mergeViews(reqAgencyView: ReqAgencyViewType): Promise<void> {
+  async mergeViews(reqAgencyView: Model.ReqAgencyViewType): Promise<void> {
     const { id, user, addressName } = reqAgencyView;
     if (!(await this.isPassed24Hours(id, user.id))) return;
     await client
@@ -245,37 +239,42 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
    */
   async mergeLikes(
     agencyId: number,
-    userLikeAgencyOpType: UserLikeAgencyOpType
+    userLikeAgencyOpType: Model.UserLikeAgencyOpType
   ): Promise<ResponseType> {
     const { userId, operation } = userLikeAgencyOpType;
-    const responser = new SORTEDSET.ResponseImpl<number>(1, -1);
+    const sortedSetResponser = new Responser.ResponseImpl<number>(1, -1);
     if (!(await this.isValidOperation(operation, agencyId, userId)))
-      return responser.toServiceResponse(-2);
-    if (operation === "increase") {
-      // 부동산 '좋아요'
-      const result = (await client.SADD(
-        `agency:${agencyId}:likes`,
-        `user:${userId}`
-      )) as number;
-      return responser.toServiceResponse(result);
-    } else {
-      // 부동산 '좋아요' 취소
-      const result = (await client.SREM(
-        `agency:${agencyId}:likes`,
-        `user:${userId}`
-      )) as number;
-      return responser.toServiceResponse(result);
+      return sortedSetResponser.toServiceResponse(-2);
+
+    let result: number;
+    switch (operation) {
+      case Model.Operation.increase:
+        result = (await client.SADD(
+          `agency:${agencyId}:likes`,
+          `user:${userId}`
+        )) as number;
+        return sortedSetResponser.toServiceResponse(result);
+      case Model.Operation.decrease:
+        result = (await client.SREM(
+          `agency:${agencyId}:likes`,
+          `user:${userId}`
+        )) as number;
+        return sortedSetResponser.toServiceResponse(result);
+      default:
+        throw new Error(
+          "Invalid operations...(increase/decrease) are valid operations."
+        );
     }
   }
 
   private async isValidOperation(
-    operation: string,
+    operation: Model.Operation,
     agencyId: number,
     userId: number
   ): Promise<boolean> {
     const isUserLike = await this.isUserLikeThisAgency(agencyId, userId);
-    if (isUserLike && operation === "decrease") return true;
-    if (!isUserLike && operation === "increase") return true;
+    if (isUserLike && operation === Model.Operation.decrease) return true;
+    if (!isUserLike && operation === Model.Operation.increase) return true;
     return false;
   }
 

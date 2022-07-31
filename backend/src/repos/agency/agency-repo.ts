@@ -72,7 +72,7 @@ export interface IAgencyRepo {
   mergeViews(reqAgencyView: ReqAgencyViewType): Promise<void>;
 
   /**
-   *
+   * 유저가 부동산 "좋아요" 버튼을 클릭했을 때, (좋아요/좋아요 취소) 를 수행합니다.
    * @param agencyId
    * @param userLikeAgencyOpType
    */

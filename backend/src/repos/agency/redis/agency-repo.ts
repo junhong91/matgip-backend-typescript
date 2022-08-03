@@ -272,9 +272,11 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
     agencyId: number,
     userId: number
   ): Promise<boolean> {
-    const isUserLike = await this.isUserLikeThisAgency(agencyId, userId);
-    if (isUserLike && operation === Model.Operation.decrease) return true;
-    if (!isUserLike && operation === Model.Operation.increase) return true;
+    const alreadyLikeAgency = await this.isUserLikeThisAgency(agencyId, userId);
+    if (alreadyLikeAgency && operation === Model.Operation.decrease)
+      return true;
+    if (!alreadyLikeAgency && operation === Model.Operation.increase)
+      return true;
     return false;
   }
 

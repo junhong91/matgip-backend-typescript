@@ -1,10 +1,14 @@
+export type Identification = string | number;
+export type GeoLatitude = string | number;
+export type GeoLongitude = string | number;
+
 /**
  * Real estate agency Schema
  */
 export type AgencyType = {
-  id: number;
-  y: number;
-  x: number;
+  id: Identification;
+  y: GeoLatitude;
+  x: GeoLongitude;
   phone?: string;
   placeName?: string;
   addressName?: string;
@@ -14,14 +18,20 @@ export type AgencyType = {
   reviewCount?: number;
 };
 
-export type UserAgeType = {
-  id: number; // user id
+export type GeoSearchByRadius = {
+  lat: GeoLatitude;
+  lng: GeoLongitude;
+  radius: number;
+};
+
+export type UserIdAndAgeRange = {
+  id: Identification; // user id
   ageRange: string; // format => "from~to" (e.g. 20~29)
 };
 
-export type ReqAgencyViewType = {
-  id: number; // agency id
-  user: UserAgeType;
+export type ReqTypeForAgencyViewCount = {
+  agencyId: Identification; // agency id
+  user: UserIdAndAgeRange;
   addressName: string;
 };
 
@@ -43,12 +53,8 @@ export type TopHitAreaType = {
   views: number;
 };
 
-export enum Operation {
-  "increase",
-  "decrease",
-}
-
-export type UserLikeAgencyOpType = {
-  userId: number;
+export type Operation = "increase" | "decrease";
+export type UserOperationType = {
+  userId: Identification;
   operation: Operation;
 };

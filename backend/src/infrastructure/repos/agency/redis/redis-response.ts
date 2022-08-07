@@ -1,9 +1,9 @@
-import { Response, ResponseType } from "../response";
+import { Response, ResponseType } from "../../../../models/agency/response";
 
 export class ResponseImpl<T> implements Response<T> {
-  constructor(private successValue: T, private alreadyAdded: T) {}
+  constructor(private successValue: T, private alreadyAdded?: T) {}
 
-  toServiceResponse(result: T): ResponseType {
+  respond(result: T): ResponseType {
     switch (result) {
       case this.successValue:
         return { reason: "success" };

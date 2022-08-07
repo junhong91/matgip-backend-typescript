@@ -3,5 +3,5 @@ export type ResponseType = {
 };
 
 export interface Response<T> {
-  toServiceResponse(result: T): ResponseType;
+  respond(result: T): ResponseType;
 }

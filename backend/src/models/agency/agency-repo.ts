@@ -31,7 +31,7 @@ export interface IAgencyRepo {
    * 매개변수 (위도/경도) 기준, radius 반경으로 부동산을 검색합니다.
    * @param geoSearchUnit (위도,경도,검색반경) 정보
    * @param geoDbName 부동산 지리 정보를 검색할 database 이름
-   * @param (위도/경도) 기준 radius 반경에 있는 부동산 정보들
+   * @return (위도/경도) 기준 radius 반경에 있는 부동산 정보들
    */
   searchByRadius(
     geoSearchUnit: Model.GeoSearchByRadius,

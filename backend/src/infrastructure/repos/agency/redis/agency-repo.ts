@@ -24,6 +24,8 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
     agency: Model.AgencyType,
     geoDbName: string = "agency"
   ): Promise<void> {
+    if (agency.id == null || agency.y == null || agency.x == null)
+      throw new Error("agency [id/y/x] can't be null or undefined...");
     await client
       .multi()
       .HSET(`agency:${agency.id}`, "id", agency.id)

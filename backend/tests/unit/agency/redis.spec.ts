@@ -55,4 +55,20 @@ describe("PERSIST real estate agency information", () => {
     response = await agencyRepo.removeGeoDb(geoDbName);
     expect(response.reason).toEqual("success");
   });
+
+  it("agency id can't be null/undefined", async () => {
+    const geoDbName = "testGeoDb";
+    const idCannotBeEmpty = {
+      y: "37.257840112491124",
+      x: "127.05992545407956",
+      placeName: "테라공인중개사사무소",
+      addressName: "경기도 수원시 영통구 매탄동 409-26",
+    };
+    const agencyRepo = new RedisRepo.RedisAgencyRepoImpl();
+    await expect(async () => {
+      await agencyRepo.persist(idCannotBeEmpty, geoDbName);
+    }).rejects.toThrowError(
+      new Error("agency [id/y/x] can't be null or undefined...")
+    );
+  });
 });

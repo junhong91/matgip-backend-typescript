@@ -14,7 +14,7 @@ module.exports = {
   coverageProvider: "v8",
 
   // An array of file extensions your modules use
-  moduleFileExtentions: [
+  moduleFileExtensions: [
     "js",
     "mjs",
     "cjs",

@@ -54,7 +54,7 @@ export type TopHitAreaType = {
 };
 
 export type Operation = "increase" | "decrease";
-export type UserOperationType = {
+export type UserLikeOperation = {
   userId: Identification;
   operation: Operation;
 };

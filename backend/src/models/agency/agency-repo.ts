@@ -74,12 +74,12 @@ export interface IAgencyRepo {
   /**
    * 유저가 부동산 "좋아요" 버튼을 클릭했을 때, (좋아요/좋아요 취소) 를 수행합니다.
    * @param agencyId 선택된 부동산 Id
-   * @param userOperationType
+   * @param userLikeOperation 유저가 요청한 (좋아요/좋아요 취소) 정보
    * @return 삭제 수행 결과를 리턴합니다. e.g. { reason: "reason of operation" }
    */
   mergeLikes(
     agencyId: Model.Identification,
-    userOperationType: Model.UserOperationType
+    userLikeOperation: Model.UserLikeOperation
   ): Promise<ResponseType>;
 
   /**

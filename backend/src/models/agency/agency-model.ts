@@ -6,15 +6,15 @@ export type GeoLongitude = string | number;
  * Real estate agency Schema
  */
 export type AgencyType = {
-  id: Identification;
-  y: GeoLatitude;
-  x: GeoLongitude;
-  phone?: string;
-  placeName?: string;
-  addressName?: string;
+  readonly id: Identification;
+  readonly y: GeoLatitude;
+  readonly x: GeoLongitude;
+  readonly phone?: string;
+  readonly placeName?: string;
+  readonly addressName?: string;
   likes?: number;
   stars?: number;
-  views?: number;
+  views?: Object;
   reviewCount?: number;
 };
 
@@ -25,12 +25,12 @@ export type GeoSearchByRadius = {
 };
 
 export type UserIdAndAgeRange = {
-  id: Identification; // user id
+  readonly id: Identification; // user id
   ageRange: string; // format => "from~to" (e.g. 20~29)
 };
 
 export type ReqTypeForAgencyViewCount = {
-  agencyId: Identification; // agency id
+  readonly agencyId: Identification; // agency id
   user: UserIdAndAgeRange;
   addressName: string;
 };

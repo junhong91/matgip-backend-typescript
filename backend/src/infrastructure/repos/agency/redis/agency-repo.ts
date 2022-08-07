@@ -19,6 +19,7 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
   /**
    * 부동산 정보를 저장합니다.
    * @param agency 부동산 정보
+   * @param geoDbName 부동산 지리 정보를 저장할 database 이름
    */
   async persist(
     agency: Model.AgencyType,
@@ -102,7 +103,8 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
    * @return 일치하는 부동산 정보
    */
   async get(id: Model.Identification): Promise<Model.AgencyType> {
-    const agency = await client.HGETALL(`agency:${id}`);
+    let agency: Model.AgencyType;
+    agency = await client.HGETALL(`agency:${id}`);
     if (this.isEmpty(agency)) {
       throw new Error("real estate agency is not exist...");
     }

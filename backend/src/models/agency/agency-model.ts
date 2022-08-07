@@ -19,9 +19,9 @@ export type AgencyType = {
 };
 
 export type GeoSearchByRadius = {
-  lat: GeoLatitude;
-  lng: GeoLongitude;
-  radius: number;
+  readonly lat: GeoLatitude;
+  readonly lng: GeoLongitude;
+  readonly radius: number;
 };
 
 export type UserIdAndAgeRange = {

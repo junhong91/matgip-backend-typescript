@@ -21,7 +21,7 @@ describe("PERSIST real estate agency information", () => {
   /**
    * Test to save/get real estate agency information
    */
-  it("save/get by agency id", async () => {
+  it("persist()/get() - save and get by agency id", async () => {
     const agencyId = "testAgency:1";
     const geoDbName = "testGeoDb";
     const agencyToStore = {
@@ -56,7 +56,7 @@ describe("PERSIST real estate agency information", () => {
     expect(response.reason).toEqual("success");
   });
 
-  it("agency id can't be null/undefined", async () => {
+  it("persist() - agency id can't be null/undefined", async () => {
     const geoDbName = "testGeoDb";
     const idCannotBeEmpty = {
       y: "37.257840112491124",
@@ -67,6 +67,40 @@ describe("PERSIST real estate agency information", () => {
     const agencyRepo = new RedisRepo.RedisAgencyRepoImpl();
     await expect(async () => {
       await agencyRepo.persist(idCannotBeEmpty, geoDbName);
+    }).rejects.toThrowError(
+      new Error("agency [id/y/x] can't be null or undefined...")
+    );
+  });
+
+  it("persist() - latitude can't be null/undefined", async () => {
+    const agencyId = "testAgency:1";
+    const geoDbName = "testGeoDb";
+    const latitudeCannotBeEmpty = {
+      id: agencyId,
+      x: "127.05992545407956",
+      placeName: "테라공인중개사사무소",
+      addressName: "경기도 수원시 영통구 매탄동 409-26",
+    };
+    const agencyRepo = new RedisRepo.RedisAgencyRepoImpl();
+    await expect(async () => {
+      await agencyRepo.persist(latitudeCannotBeEmpty, geoDbName);
+    }).rejects.toThrowError(
+      new Error("agency [id/y/x] can't be null or undefined...")
+    );
+  });
+
+  it("persist() - longitude can't be null/undefined", async () => {
+    const agencyId = "testAgency:1";
+    const geoDbName = "testGeoDb";
+    const longitudeCannotBeEmpty = {
+      id: agencyId,
+      y: "37.257840112491124",
+      placeName: "테라공인중개사사무소",
+      addressName: "경기도 수원시 영통구 매탄동 409-26",
+    };
+    const agencyRepo = new RedisRepo.RedisAgencyRepoImpl();
+    await expect(async () => {
+      await agencyRepo.persist(longitudeCannotBeEmpty, geoDbName);
     }).rejects.toThrowError(
       new Error("agency [id/y/x] can't be null or undefined...")
     );

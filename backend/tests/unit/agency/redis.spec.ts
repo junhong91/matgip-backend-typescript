@@ -258,10 +258,23 @@ describe("VIEWS - increase/decrease view count of real estate agency", () => {
     expect(response.reason).toEqual("success");
 
     // 2. Check if saved correctly...
-    expect(await client.HGET(`agency:${agencyId}:views`, "range:30")).toEqual(
-      "1"
+    const agencyStored = await agencyRepo.getViews(agencyId);
+    expect(agencyStored["range:30"]).toEqual("1");
+
+    // 3. Fetch top hits agencies
+    const topHitsAgencies = await agencyRepo.getTopHitAgencies("0~14");
+    expect(topHitsAgencies.length).toEqual(1);
+    expect(topHitsAgencies[0].agencyName).toEqual("테라공인중개사사무소");
+    expect(topHitsAgencies[0].addressName).toEqual(
+      "경기도 수원시 영통구 매탄동 409-26"
     );
-    const agencies = await agencyRepo.getTopHitAgencies("0~14");
-    expect(agencies.length).toEqual(1);
+
+    // 4. Fetch top hits areas
+    const topHitsAreas = await agencyRepo.getTopHitAreas("0~14");
+    expect(topHitsAreas.length).toEqual(1);
+    expect(topHitsAreas[0].views).toEqual(1);
+    expect(topHitsAreas[0].areaName).toEqual("경기도 수원시 영통구");
+
+    // Flush all test datas from redis database
   });
 });

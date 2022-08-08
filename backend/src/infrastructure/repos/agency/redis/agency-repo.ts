@@ -140,8 +140,7 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
    * @return 연령대별 부동산 조회수 e.g. { "20":1, "30": 3, }
    */
   async getViews(id: Model.Identification): Promise<Object> {
-    const agencyViews = await client.HGETALL(`agency:${id}:views`);
-    return agencyViews;
+    return await client.HGETALL(`agency:${id}:views`);
   }
 
   /**
@@ -182,22 +181,22 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
    */
   async getTopHitAreas(query: string): Promise<Model.TopHitAreaType[]> {
     const range: string[] = query.split("~");
-    const scoreValues = (await client.ZRANGE_WITHSCORES(
+    const scoreValues = await client.ZRANGE_WITHSCORES(
       "realtime_area_views",
       range[0],
       range[range.length - 1],
       {
         REV: true,
       }
-    )) as any[];
+    );
 
     const topHitAreas: Model.TopHitAreaType[] = [];
     await Promise.all(
-      scoreValues.map(async (scoreValue) => {
+      scoreValues.map(async (scoreValue: any) => {
         const areaName = scoreValue.value.split(":")[1];
         topHitAreas.push({
           areaName,
-          views: +scoreValue.score,
+          views: scoreValue.score,
         });
       })
     );

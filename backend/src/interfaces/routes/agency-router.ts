@@ -6,7 +6,7 @@ import { ParamMissingError } from "@shared/errors";
 
 // Constants
 const router = Router();
-const { CREATED, OK } = StatusCodes;
+const { CREATED, BAD_REQUEST, INTERNAL_SERVER_ERROR, OK } = StatusCodes;
 
 export const paths = {
   get: "/:agencyId",
@@ -21,11 +21,15 @@ export const paths = {
  */
 router.get(paths.get, async (req: Request, res: Response) => {
   const { agencyId } = req.params;
-  if (!agencyId) {
-    throw new ParamMissingError();
+  if (!agencyId) return res.status(BAD_REQUEST).end();
+
+  try {
+    const agency = await agencyService.get(agencyId);
+    return res.status(OK).json({ agency });
+  } catch (err) {
+    console.error(err);
+    res.status(INTERNAL_SERVER_ERROR).end();
   }
-  const agency = await agencyService.get(agencyId);
-  return res.status(OK).json({ agency });
 });
 
 /**
@@ -35,11 +39,15 @@ router.get(paths.get, async (req: Request, res: Response) => {
  */
 router.get(paths.getViews, async (req: Request, res: Response) => {
   const { agencyId } = req.params;
-  if (!agencyId) {
-    throw new ParamMissingError();
+  if (!agencyId) return res.status(BAD_REQUEST).end();
+
+  try {
+    const agencyViews = await agencyService.getViews(agencyId);
+    return res.status(OK).json({ agencyViews });
+  } catch (err) {
+    console.error(err);
+    res.status(INTERNAL_SERVER_ERROR).end();
   }
-  const agencyViews = await agencyService.getViews(agencyId);
-  return res.status(OK).json({ agencyViews });
 });
 
 export default router;

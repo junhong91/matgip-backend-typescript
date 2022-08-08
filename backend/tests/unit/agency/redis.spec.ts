@@ -212,7 +212,6 @@ describe("LIKES - increase/decrease like count of real estate agency", () => {
     // Flush all test datas from redis database
     response = await agencyRepo.removeAgency(agencyId);
     expect(response.reason).toEqual("success");
-
     response = await agencyRepo.removeGeoDb(geoDbName);
     expect(response.reason).toEqual("success");
   });
@@ -276,5 +275,13 @@ describe("VIEWS - increase/decrease view count of real estate agency", () => {
     expect(topHitsAreas[0].areaName).toEqual("경기도 수원시 영통구");
 
     // Flush all test datas from redis database
+    response = await agencyRepo.removeAgency(agencyId);
+    expect(response.reason).toEqual("success");
+    response = await agencyRepo.removeGeoDb(geoDbName);
+    expect(response.reason).toEqual("success");
+    await client.DEL("realtime_agencies_views");
+    await client.DEL("realtime_area_views");
+    await client.DEL(`agency:${agencyId}:views`);
+    await client.DEL(`agency:${agencyId}:last_view_time`);
   });
 });

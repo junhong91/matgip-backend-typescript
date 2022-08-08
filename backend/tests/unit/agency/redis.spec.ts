@@ -231,8 +231,9 @@ describe("VIEWS - increase/decrease view count of real estate agency", () => {
   });
 
   it("mergeViews() - increase / decrease view count and check if is passed 24 hours", async () => {
+    const agencyId = "testAgency:1";
     const reqAgencyView = {
-      agencyId: "testAgency:1",
+      agencyId: agencyId,
       user: {
         id: "testUser:1",
         ageRange: "30~39",
@@ -244,5 +245,10 @@ describe("VIEWS - increase/decrease view count of real estate agency", () => {
     const agencyRepo = new RedisRepo.RedisAgencyRepoImpl();
     response = await agencyRepo.mergeViews(reqAgencyView);
     expect(response.reason).toEqual("success");
+
+    // Check if saved correctly...
+    expect(await client.HGET(`agency:${agencyId}:views`, "range:30")).toEqual(
+      "1"
+    );
   });
 });

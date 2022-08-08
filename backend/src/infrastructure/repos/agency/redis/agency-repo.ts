@@ -146,23 +146,25 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
 
   /**
    * 조회수가 가장 높은 최대 상위 15개 부동산 정보를 반환합니다.
-   * @param query Fetch할 부동산 개수(15개)
+   * @param query Fetch할 부동산 개수(15개) format. 0~14
+   * @return 일치하는 부동산 정보들
    */
   async getTopHitAgencies(query: string): Promise<Model.TopHitAgencyType[]> {
     const range: string[] = query.split("~");
-    const scoreValues = (await client.ZRANGE_WITHSCORES(
+    const scoreValues = await client.ZRANGE_WITHSCORES(
       "realtime_agencies_views",
       range[0],
       range[range.length - 1],
       { REV: true }
-    )) as any[];
+    );
 
-    const topHitAgencies: Model.TopHitAgencyType[] = [];
+    const agencies: Model.TopHitAgencyType[] = [];
     await Promise.all(
       scoreValues.map(async (scoreValue: any) => {
-        const agencyId = +scoreValue.value.split(":")[1];
-        const agency = (await this.get(agencyId)) as Model.AgencyType;
-        topHitAgencies.push({
+        const agencyId = scoreValue.value.split(":")[1];
+        const agency = await this.get(agencyId);
+
+        agencies.push({
           baseTime: baseTime,
           agencyName: agency.placeName,
           addressName: agency.addressName,
@@ -170,12 +172,13 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
         });
       })
     );
-    return topHitAgencies;
+    return agencies;
   }
 
   /**
    * 조회수가 높은 지역의 최대 상위 15개 정보를 반환합니다.
    * @param {string} query Fetch할 장소 개수(15개)
+   * @return 일치하는 부동산 정보들
    */
   async getTopHitAreas(query: string): Promise<Model.TopHitAreaType[]> {
     const range: string[] = query.split("~");

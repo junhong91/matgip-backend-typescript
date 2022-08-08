@@ -54,7 +54,7 @@ export interface IAgencyRepo {
 
   /**
    * 조회수가 가장 높은 최대 상위 15개 부동산 정보를 반환합니다.
-   * @param query Fetch할 부동산 개수(15개)
+   * @param query Fetch할 부동산 개수(15개) format. 0~14
    */
   getTopHitAgencies(query: string): Promise<Model.TopHitAgencyType[]>;
 

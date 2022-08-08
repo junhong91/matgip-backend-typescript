@@ -23,7 +23,7 @@ describe("PERSIST - real estate agency information", () => {
    * Test to save/get real estate agency information
    */
   it("persist()/get() - save and get by agency id", async () => {
-    const agencyId = "testAgency:1";
+    const agencyId = "testAgency1";
     const geoDbName = "testGeoDb";
     const agencyToStore = {
       id: agencyId,
@@ -77,21 +77,21 @@ describe("SEARCHBYRADIUS - search estate agency by (lat/lng/radius)", () => {
     const geoDbName = "testGeoDb";
     const agenciesToStore = [
       {
-        id: "testAgency:1",
+        id: "testAgency1",
         y: 37.257840112491124,
         x: 127.05992545407956,
         placeName: "테라공인중개사사무소",
         addressName: "경기도 수원시 영통구 매탄동 409-26",
       },
       {
-        id: "testAgency:2",
+        id: "testAgency2",
         y: 37.25831364654198,
         x: 127.05895637456912,
         placeName: "황토 공인중개사사무소",
         addressName: "경기 수원시 영통구 매탄동 410-12",
       },
       {
-        id: "testAgency:3",
+        id: "testAgency3",
         y: 37.257481883788,
         x: 127.06005198710506,
         placeName: "굿애플공인중개사사무소",
@@ -159,7 +159,7 @@ describe("LIKES - increase/decrease like count of real estate agency", () => {
   });
 
   it("mergeLikes() - increase like / decrease like and check if is invalid operation", async () => {
-    const agencyId = "testAgency:1";
+    const agencyId = "testAgency1";
     const geoDbName = "testGeoDb";
     const agencyToScore = {
       id: agencyId,
@@ -171,7 +171,7 @@ describe("LIKES - increase/decrease like count of real estate agency", () => {
 
     let userLikeOp;
     userLikeOp = {
-      userId: "testUser:1",
+      userId: "testUser1",
       operation: "increase" as Model.Operation,
     };
 
@@ -194,7 +194,7 @@ describe("LIKES - increase/decrease like count of real estate agency", () => {
 
     // 3. Check if like count decreased to 0
     userLikeOp = {
-      userId: "testUser:1",
+      userId: "testUser1",
       operation: "decrease" as Model.Operation,
     };
 
@@ -231,11 +231,19 @@ describe("VIEWS - increase/decrease view count of real estate agency", () => {
   });
 
   it("mergeViews() - increase / decrease view count and check if is passed 24 hours", async () => {
-    const agencyId = "testAgency:1";
+    const agencyId = "testAgency1";
+    const geoDbName = "testGeoDb";
+    const agencyToScore = {
+      id: agencyId,
+      y: 37.257840112491124,
+      x: 127.05992545407956,
+      placeName: "테라공인중개사사무소",
+      addressName: "경기도 수원시 영통구 매탄동 409-26",
+    };
     const reqAgencyView = {
       agencyId: agencyId,
       user: {
-        id: "testUser:1",
+        id: "testUser1",
         ageRange: "30~39",
       },
       addressName: "경기도 수원시 영통구 매탄동 409-26",
@@ -243,12 +251,17 @@ describe("VIEWS - increase/decrease view count of real estate agency", () => {
     let response;
 
     const agencyRepo = new RedisRepo.RedisAgencyRepoImpl();
+
+    // 1. Save real estate agency & increase view count
+    await agencyRepo.persist(agencyToScore, geoDbName);
     response = await agencyRepo.mergeViews(reqAgencyView);
     expect(response.reason).toEqual("success");
 
-    // Check if saved correctly...
+    // 2. Check if saved correctly...
     expect(await client.HGET(`agency:${agencyId}:views`, "range:30")).toEqual(
       "1"
     );
+    const agencies = await agencyRepo.getTopHitAgencies("0~14");
+    expect(agencies.length).toEqual(1);
   });
 });

@@ -70,11 +70,11 @@
       "@models/*": ["src/models/*"],
       "@shared/*": ["src/shared/*"],
       "@server": ["src/server"],
-      "@services/*": ["src/services/*"],
-      "@routes/*": ["src/routes/*"]
+      "@services/*": ["src/interfaces/services/*"],
+      "@routes/*": ["src/interfaces/routes/*"]
     },
     "useUnknownInCatchVariables": false
   },
-  "include": ["src/**/*.ts", "spec/**/*.ts"],
+  "include": ["src/**/*.ts", "tests/**/*.ts"],
   "exclude": ["src/public/"]
 }

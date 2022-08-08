@@ -69,7 +69,9 @@ export interface IAgencyRepo {
    * 동일한 user는 24시간이 지난 후에 view count가 1 증가됩니다.(24 이전 중복 불가)
    * @param reqAgencyView
    */
-  mergeViews(reqAgencyView: Model.ReqTypeForAgencyViewCount): Promise<void>;
+  mergeViews(
+    reqAgencyView: Model.ReqTypeForAgencyViewCount
+  ): Promise<ResponseType>;
 
   /**
    * 유저가 부동산 "좋아요" 버튼을 클릭했을 때, (좋아요/좋아요 취소) 를 수행합니다.

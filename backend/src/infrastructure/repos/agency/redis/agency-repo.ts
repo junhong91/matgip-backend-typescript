@@ -208,10 +208,23 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
    */
   async mergeViews(
     reqAgencyView: Model.ReqTypeForAgencyViewCount
-  ): Promise<void> {
+  ): Promise<ResponseType> {
     const { agencyId, user, addressName } = reqAgencyView;
-    if (!(await this.isPassed24Hours(agencyId, user.id))) return;
-    await client
+    const enum CommandResultState {
+      SUCCESS = 1,
+      FAILED = -1,
+    }
+    const commandResponder = new Responser.ResponseImpl<number>(
+      CommandResultState.SUCCESS
+    );
+    let result: number[];
+
+    if (agencyId == null || user == null || addressName == null)
+      throw new Error("[agencyId/user/addressName] cannot be null/undefined");
+    if (!(await this.isPassed24Hours(agencyId, user.id)))
+      return commandResponder.respond(CommandResultState.FAILED);
+
+    result = await client
       .multi()
       .HSET(
         `agency:${agencyId}:last_view_time`,
@@ -231,6 +244,10 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
         `area:${this.getFullAreaName(addressName)}`
       )
       .exec();
+    return result.filter((item) => item != CommandResultState.SUCCESS).length >
+      0
+      ? commandResponder.respond(CommandResultState.FAILED)
+      : commandResponder.respond(CommandResultState.SUCCESS);
   }
 
   private async isPassed24Hours(
@@ -261,12 +278,6 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
     userLikeOperation: Model.UserLikeOperation
   ): Promise<ResponseType> {
     const { userId, operation } = userLikeOperation;
-    if (userId == null || agencyId == null || operation == null)
-      throw new Error("[userId/agencyId/operation] can not be null");
-
-    if (!(await this.isValidOperation(operation, agencyId, userId)))
-      throw new Error("Invalid operation");
-
     let result: number;
     const enum SortedSetState {
       SUCCESS = 1,
@@ -274,18 +285,25 @@ export class RedisAgencyRepoImpl implements IAgencyRepo {
     const sortedSetResponder = new Responser.ResponseImpl<number>(
       SortedSetState.SUCCESS
     );
+
+    if (userId == null || agencyId == null || operation == null)
+      throw new Error("[userId/agencyId/operation] can not be null");
+
+    if (!(await this.isValidOperation(operation, agencyId, userId)))
+      throw new Error("Invalid operation");
+
     switch (operation) {
       case "increase":
-        result = (await client.SADD(
+        result = await client.SADD(
           `agency:${agencyId}:likes`,
           `user:${userId}`
-        )) as number;
+        );
         return sortedSetResponder.respond(result);
       case "decrease":
-        result = (await client.SREM(
+        result = await client.SREM(
           `agency:${agencyId}:likes`,
           `user:${userId}`
-        )) as number;
+        );
         return sortedSetResponder.respond(result);
       default:
         throw new Error(

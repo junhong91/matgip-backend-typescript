@@ -7,7 +7,7 @@ import { client } from "src/infrastructure/config/redis/client";
 import * as RedisRepo from "src/infrastructure/repos/agency/redis/agency-repo";
 import * as Model from "src/models/agency/agency-model";
 
-describe("PERSIST real estate agency information", () => {
+describe("PERSIST - real estate agency information", () => {
   /**
    * Set up db connection
    */
@@ -58,7 +58,7 @@ describe("PERSIST real estate agency information", () => {
   });
 });
 
-describe("SEARCHBYRADIUS search estate agency by (lat/lng/radius)", () => {
+describe("SEARCHBYRADIUS - search estate agency by (lat/lng/radius)", () => {
   /**
    * Set up db connection
    */
@@ -146,7 +146,7 @@ describe("SEARCHBYRADIUS search estate agency by (lat/lng/radius)", () => {
   });
 });
 
-describe("LIKES increase/decrease like count of real estate agency ", () => {
+describe("LIKES - increase/decrease like count of real estate agency", () => {
   /**
    * Set up db connection
    */
@@ -158,7 +158,7 @@ describe("LIKES increase/decrease like count of real estate agency ", () => {
     await client.quit();
   });
 
-  it("mergeLikes() - increase like / decrease like / and check if is invalid operation", async () => {
+  it("mergeLikes() - increase like / decrease like and check if is invalid operation", async () => {
     const agencyId = "testAgency:1";
     const geoDbName = "testGeoDb";
     const agencyToScore = {
@@ -214,6 +214,35 @@ describe("LIKES increase/decrease like count of real estate agency ", () => {
     expect(response.reason).toEqual("success");
 
     response = await agencyRepo.removeGeoDb(geoDbName);
+    expect(response.reason).toEqual("success");
+  });
+});
+
+describe("VIEWS - increase/decrease view count of real estate agency", () => {
+  /**
+   * Set up db connection
+   */
+  beforeAll(async () => {
+    await client.connect();
+  });
+
+  afterAll(async () => {
+    await client.quit();
+  });
+
+  it("mergeViews() - increase / decrease view count and check if is passed 24 hours", async () => {
+    const reqAgencyView = {
+      agencyId: "testAgency:1",
+      user: {
+        id: "testUser:1",
+        ageRange: "30~39",
+      },
+      addressName: "경기도 수원시 영통구 매탄동 409-26",
+    };
+    let response;
+
+    const agencyRepo = new RedisRepo.RedisAgencyRepoImpl();
+    response = await agencyRepo.mergeViews(reqAgencyView);
     expect(response.reason).toEqual("success");
   });
 });

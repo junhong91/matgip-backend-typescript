@@ -32,7 +32,6 @@ export async function agencyHandler(
     return res.json({ agency });
   } catch (err) {
     if (err instanceof ClientClosedError && retries > 0) {
-      await client.connect();
       return agencyHandler(req, res, retries - 1);
     }
     return res.sendStatus(INTERNAL_SERVER_ERROR);
@@ -58,7 +57,6 @@ export async function agencyViewHandler(
   } catch (err) {
     console.log(err);
     if (err instanceof ClientClosedError && retries > 0) {
-      await client.connect();
       return agencyViewHandler(req, res, retries - 1);
     }
     return res.sendStatus(INTERNAL_SERVER_ERROR);
@@ -85,7 +83,6 @@ export async function agencyLikeHandler(
   } catch (err) {
     console.error(err);
     if (err instanceof ClientClosedError && retries > 0) {
-      await client.connect();
       return agencyLikeHandler(req, res, retries - 1);
     }
 

@@ -7,7 +7,7 @@ const baseRouter = Router();
 
 // Setup routers
 baseRouter.use("/users", userRouter);
-baseRouter.use("/api/agency", agencyRouter);
+baseRouter.use("/agency", agencyRouter);
 
 // Export default.
 export default baseRouter;

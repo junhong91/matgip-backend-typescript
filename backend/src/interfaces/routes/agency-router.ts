@@ -2,7 +2,6 @@ import StatusCodes from "http-status-codes";
 import { Request, Response, Router } from "express";
 
 import agencyService from "@services/agency-service";
-import { ParamMissingError } from "@shared/errors";
 
 // Constants
 const router = Router();
@@ -16,8 +15,6 @@ export const paths = {
 
 /**
  * Get real estate agency information.
- * @param req.params.agencyId agency identification
- * @return agency information (Please see @model/agency/agency-model/AgencyType)
  */
 router.get(paths.get, async (req: Request, res: Response) => {
   const { agencyId } = req.params;
@@ -34,8 +31,6 @@ router.get(paths.get, async (req: Request, res: Response) => {
 
 /**
  * Get real estate agency views(ageRange:viewCounts)
- * @param agencyId The real estate agency identification
- * @return Real estate hit counts on age range e.g. { "20":1, "30": 3, }
  */
 router.get(paths.getViews, async (req: Request, res: Response) => {
   const { agencyId } = req.params;
@@ -44,6 +39,23 @@ router.get(paths.getViews, async (req: Request, res: Response) => {
   try {
     const agencyViews = await agencyService.getViews(agencyId);
     return res.status(OK).json({ agencyViews });
+  } catch (err) {
+    console.error(err);
+    res.status(INTERNAL_SERVER_ERROR).end();
+  }
+});
+
+/**
+ * Check if user like the agency
+ * Fixed: get user id from req.params, not req.query
+ */
+router.get(paths.getLikes, async (req: Request, res: Response) => {
+  const { agencyId, userId } = req.params;
+  if (!agencyId || !userId) return res.status(BAD_REQUEST).end();
+
+  try {
+    const isUserLikeAgency = await agencyService.getLikes(agencyId, userId);
+    res.status(OK).json(isUserLikeAgency);
   } catch (err) {
     console.error(err);
     res.status(INTERNAL_SERVER_ERROR).end();

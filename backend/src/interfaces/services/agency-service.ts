@@ -11,6 +11,13 @@ async function getViews(id: Model.Identification): Promise<Object> {
   return await AgencyRepo.getViews(id);
 }
 
+async function getLikes(
+  agencyId: Model.Identification,
+  userId: Model.Identification
+): Promise<boolean> {
+  return await AgencyRepo.isUserLikeAgency(agencyId, userId);
+}
+
 async function getTopHitAgencies(
   query: string
 ): Promise<Model.TopHitAgencyType[]> {
@@ -47,6 +54,7 @@ export default {
   getViews,
   getTopHitAgencies,
   getTopHitAreas,
+  getLikes,
   add,
   updateViews,
   updateLikes,

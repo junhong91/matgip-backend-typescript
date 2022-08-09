@@ -104,4 +104,9 @@ export interface IAgencyRepo {
    * @return 삭제 수행 결과를 리턴합니다. e.g. { reason: "reason of operation" }
    */
   removeGeoDb(geoDbName: string): Promise<ResponseType>;
+
+  isUserLikeThisAgency(
+    agencyId: Model.Identification,
+    userId: Model.Identification
+  ): Promise<boolean>;
 }

@@ -331,7 +331,7 @@ class RedisAgencyRepoImpl implements IAgencyRepo {
    * @param userId 검색할 부동산 Id
    * @return 좋아하면 true, 좋아하지 않으면 false
    */
-  private async isUserLikeThisAgency(
+  async isUserLikeThisAgency(
     agencyId: Model.Identification,
     userId: Model.Identification
   ): Promise<boolean> {

@@ -15,7 +15,7 @@ function flush() {
 }
 setInterval(flush, 24 * 3600 * 1000);
 
-class RedisAgencyRepoImpl implements IAgencyRepo {
+module.exports = class AgencyRepository implements IAgencyRepo {
   /**
    * 부동산 정보를 저장합니다.
    * @param agency 부동산 정보
@@ -381,6 +381,4 @@ class RedisAgencyRepoImpl implements IAgencyRepo {
     const cmdResult = await client.DEL(geoDbName);
     return responder.respond(cmdResult);
   }
-}
-
-module.exports = new RedisAgencyRepoImpl();
+};

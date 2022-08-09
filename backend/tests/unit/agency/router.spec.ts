@@ -1,3 +1,7 @@
-import { baseRouter } from "@interfaces/routes/api";
+import apiRouter from "../../../src/interfaces/routes/api";
 
-describe("GET - agency", () => {});
+describe("GET - agency", () => {
+  it("TEST", async () => {
+    console.log("TEST");
+  });
+});

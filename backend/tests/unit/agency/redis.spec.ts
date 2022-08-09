@@ -4,8 +4,9 @@
  * https://betterprogramming.pub/database-testing-made-easy-with-jest-db96ad5f1f46
  */
 import { client } from "src/infrastructure/config/redis/client";
-import * as RedisRepo from "src/infrastructure/repos/agency/redis/agency-repo";
 import * as Model from "src/models/agency/agency-model";
+
+const AgencyRepository = require("../../../src/infrastructure/repos/agency/index");
 
 describe("PERSIST - real estate agency information", () => {
   /**
@@ -22,7 +23,7 @@ describe("PERSIST - real estate agency information", () => {
   /**
    * Test to save/get real estate agency information
    */
-  it("persist()/get() - save and get by agency id", async () => {
+  it("should save and get by agency id", async () => {
     const agencyId = "testAgency1";
     const geoDbName = "testGeoDb";
     const agencyToStore = {
@@ -43,17 +44,16 @@ describe("PERSIST - real estate agency information", () => {
       reviewCount: 0,
       views: {},
     };
-    const agencyRepo = new RedisRepo.RedisAgencyRepoImpl();
-    await agencyRepo.persist(agencyToStore, geoDbName);
+    await AgencyRepository.persist(agencyToStore, geoDbName);
 
-    const agencyStored = await agencyRepo.get(agencyId);
+    const agencyStored = await AgencyRepository.get(agencyId);
     expect(agencyStored).toEqual(agencyExpected);
 
     let response;
-    response = await agencyRepo.removeAgency(agencyId);
+    response = await AgencyRepository.removeAgency(agencyId);
     expect(response.reason).toEqual("success");
 
-    response = await agencyRepo.removeGeoDb(geoDbName);
+    response = await AgencyRepository.removeGeoDb(geoDbName);
     expect(response.reason).toEqual("success");
   });
 });
@@ -73,7 +73,7 @@ describe("SEARCHBYRADIUS - search estate agency by (lat/lng/radius)", () => {
   /**
    * Test for searching real estate agencies by (lat/lng/radius)
    */
-  it("searchByRadius() - save and get agencies that meets the (lat/lng/radius) option", async () => {
+  it("should save and get agencies that meets the (lat/lng/radius) option", async () => {
     const geoDbName = "testGeoDb";
     const agenciesToStore = [
       {
@@ -99,13 +99,12 @@ describe("SEARCHBYRADIUS - search estate agency by (lat/lng/radius)", () => {
       },
     ];
 
-    const agencyRepo = new RedisRepo.RedisAgencyRepoImpl();
     for (let agency of agenciesToStore) {
-      await agencyRepo.persist(agency, geoDbName);
+      await AgencyRepository.persist(agency, geoDbName);
     }
 
     let results;
-    results = await agencyRepo.searchByRadius(
+    results = await AgencyRepository.searchByRadius(
       {
         lat: 37.257481883788,
         lng: 127.06005198710506,
@@ -115,7 +114,7 @@ describe("SEARCHBYRADIUS - search estate agency by (lat/lng/radius)", () => {
     );
     expect(results.length).toEqual(3);
 
-    results = await agencyRepo.searchByRadius(
+    results = await AgencyRepository.searchByRadius(
       {
         lat: 37.257481883788,
         lng: 127.06005198710506,
@@ -125,7 +124,7 @@ describe("SEARCHBYRADIUS - search estate agency by (lat/lng/radius)", () => {
     );
     expect(results.length).toEqual(2);
 
-    results = await agencyRepo.searchByRadius(
+    results = await AgencyRepository.searchByRadius(
       {
         lat: 37.257481883788,
         lng: 127.06005198710506,
@@ -137,11 +136,11 @@ describe("SEARCHBYRADIUS - search estate agency by (lat/lng/radius)", () => {
 
     let response;
     for (let agency of agenciesToStore) {
-      response = await agencyRepo.removeAgency(agency.id);
+      response = await AgencyRepository.removeAgency(agency.id);
       expect(response.reason).toEqual("success");
     }
 
-    response = await agencyRepo.removeGeoDb(geoDbName);
+    response = await AgencyRepository.removeGeoDb(geoDbName);
     expect(response.reason).toEqual("success");
   });
 });
@@ -158,7 +157,7 @@ describe("LIKES - increase/decrease like count of real estate agency", () => {
     await client.quit();
   });
 
-  it("mergeLikes() - increase like / decrease like and check if is invalid operation", async () => {
+  it("should increase/decrease like count and not performed in invalid operations", async () => {
     const agencyId = "testAgency1";
     const geoDbName = "testGeoDb";
     const agencyToScore = {
@@ -175,21 +174,20 @@ describe("LIKES - increase/decrease like count of real estate agency", () => {
       operation: "increase" as Model.Operation,
     };
 
-    const agencyRepo = new RedisRepo.RedisAgencyRepoImpl();
-    await agencyRepo.persist(agencyToScore, geoDbName);
+    await AgencyRepository.persist(agencyToScore, geoDbName);
 
     let response;
-    response = await agencyRepo.mergeLikes(agencyId, userLikeOp);
+    response = await AgencyRepository.mergeLikes(agencyId, userLikeOp);
     expect(response.reason).toEqual("success");
 
     // 1. Check if like count increased to 1
     let agency;
-    agency = await agencyRepo.get(agencyId);
+    agency = await AgencyRepository.get(agencyId);
     expect(agency.likes).toEqual(1);
 
     // 2. Check invalid operation: Cannot increase like count with same user in multiple times
     await expect(
-      agencyRepo.mergeLikes(agencyId, userLikeOp)
+      AgencyRepository.mergeLikes(agencyId, userLikeOp)
     ).rejects.toThrowError(new Error("Invalid operation"));
 
     // 3. Check if like count decreased to 0
@@ -198,21 +196,21 @@ describe("LIKES - increase/decrease like count of real estate agency", () => {
       operation: "decrease" as Model.Operation,
     };
 
-    response = await agencyRepo.mergeLikes(agencyId, userLikeOp);
+    response = await AgencyRepository.mergeLikes(agencyId, userLikeOp);
     expect(response.reason).toEqual("success");
 
-    agency = await agencyRepo.get(agencyId);
+    agency = await AgencyRepository.get(agencyId);
     expect(agency.likes).toEqual(0);
 
     // 4. Check invalid operation: Cannot decrease like count if user doesn't like this agency
     await expect(
-      agencyRepo.mergeLikes(agencyId, userLikeOp)
+      AgencyRepository.mergeLikes(agencyId, userLikeOp)
     ).rejects.toThrowError(new Error("Invalid operation"));
 
     // Flush all test datas from redis database
-    response = await agencyRepo.removeAgency(agencyId);
+    response = await AgencyRepository.removeAgency(agencyId);
     expect(response.reason).toEqual("success");
-    response = await agencyRepo.removeGeoDb(geoDbName);
+    response = await AgencyRepository.removeGeoDb(geoDbName);
     expect(response.reason).toEqual("success");
   });
 });
@@ -229,7 +227,7 @@ describe("VIEWS - increase/decrease view count of real estate agency", () => {
     await client.quit();
   });
 
-  it("mergeViews() - increase / decrease view count and check if is passed 24 hours", async () => {
+  it("should (increase/decrease) view count and not performed if is passed 24 hours", async () => {
     const agencyId = "testAgency1";
     const geoDbName = "testGeoDb";
     const agencyToScore = {
@@ -249,19 +247,17 @@ describe("VIEWS - increase/decrease view count of real estate agency", () => {
     };
     let response;
 
-    const agencyRepo = new RedisRepo.RedisAgencyRepoImpl();
-
     // 1. Save real estate agency & increase view count
-    await agencyRepo.persist(agencyToScore, geoDbName);
-    response = await agencyRepo.mergeViews(reqAgencyView);
+    await AgencyRepository.persist(agencyToScore, geoDbName);
+    response = await AgencyRepository.mergeViews(reqAgencyView);
     expect(response.reason).toEqual("success");
 
     // 2. Check if saved correctly...
-    const agencyStored = await agencyRepo.getViews(agencyId);
+    const agencyStored = await AgencyRepository.getViews(agencyId);
     expect(agencyStored["range:30"]).toEqual("1");
 
     // 3. Fetch top hits agencies
-    const topHitsAgencies = await agencyRepo.getTopHitAgencies("0~14");
+    const topHitsAgencies = await AgencyRepository.getTopHitAgencies("0~14");
     expect(topHitsAgencies.length).toEqual(1);
     expect(topHitsAgencies[0].agencyName).toEqual("테라공인중개사사무소");
     expect(topHitsAgencies[0].addressName).toEqual(
@@ -269,15 +265,15 @@ describe("VIEWS - increase/decrease view count of real estate agency", () => {
     );
 
     // 4. Fetch top hits areas
-    const topHitsAreas = await agencyRepo.getTopHitAreas("0~14");
+    const topHitsAreas = await AgencyRepository.getTopHitAreas("0~14");
     expect(topHitsAreas.length).toEqual(1);
     expect(topHitsAreas[0].views).toEqual(1);
     expect(topHitsAreas[0].areaName).toEqual("경기도 수원시 영통구");
 
     // Flush all test datas from redis database
-    response = await agencyRepo.removeAgency(agencyId);
+    response = await AgencyRepository.removeAgency(agencyId);
     expect(response.reason).toEqual("success");
-    response = await agencyRepo.removeGeoDb(geoDbName);
+    response = await AgencyRepository.removeGeoDb(geoDbName);
     expect(response.reason).toEqual("success");
     await client.DEL("realtime_agencies_views");
     await client.DEL("realtime_area_views");

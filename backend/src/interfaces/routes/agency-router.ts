@@ -19,11 +19,7 @@ export const paths = {
  * Get real estate agency information.
  */
 router.get(paths.get, agencyHandler);
-export async function agencyHandler(
-  req: Request,
-  res: Response,
-  retries: number = 5
-) {
+export async function agencyHandler(req: Request, res: Response) {
   const { agencyId } = req.params;
   if (!agencyId) return res.sendStatus(BAD_REQUEST);
 
@@ -31,9 +27,7 @@ export async function agencyHandler(
     const agency = await agencyService.get(agencyId);
     return res.json({ agency });
   } catch (err) {
-    if (err instanceof ClientClosedError && retries > 0) {
-      return agencyHandler(req, res, retries - 1);
-    }
+    console.log(err);
     return res.sendStatus(INTERNAL_SERVER_ERROR);
   }
 }
@@ -43,11 +37,7 @@ export async function agencyHandler(
  */
 router.get(paths.getViews, agencyViewHandler);
 
-export async function agencyViewHandler(
-  req: Request,
-  res: Response,
-  retries: number = 5
-) {
+export async function agencyViewHandler(req: Request, res: Response) {
   const { agencyId } = req.params;
   if (!agencyId) return res.sendStatus(BAD_REQUEST);
 
@@ -56,9 +46,6 @@ export async function agencyViewHandler(
     return res.json({ agencyViews });
   } catch (err) {
     console.log(err);
-    if (err instanceof ClientClosedError && retries > 0) {
-      return agencyViewHandler(req, res, retries - 1);
-    }
     return res.sendStatus(INTERNAL_SERVER_ERROR);
   }
 }
@@ -69,11 +56,7 @@ export async function agencyViewHandler(
  */
 router.get(paths.getLikes, agencyLikeHandler);
 
-export async function agencyLikeHandler(
-  req: Request,
-  res: Response,
-  retries: number = 5
-) {
+export async function agencyLikeHandler(req: Request, res: Response) {
   const { agencyId, userId } = req.params;
   if (!agencyId || !userId) return res.sendStatus(BAD_REQUEST);
 
@@ -82,10 +65,6 @@ export async function agencyLikeHandler(
     res.json(isUserLikeAgency);
   } catch (err) {
     console.error(err);
-    if (err instanceof ClientClosedError && retries > 0) {
-      return agencyLikeHandler(req, res, retries - 1);
-    }
-
     return res.sendStatus(INTERNAL_SERVER_ERROR);
   }
 }

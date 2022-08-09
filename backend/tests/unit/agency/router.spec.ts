@@ -43,4 +43,21 @@ describe("GET - fetch agency", () => {
       StatusCodes.INTERNAL_SERVER_ERROR
     );
   });
+
+  it("FETCH agency", async () => {
+    const req = {
+      params: {
+        agencyId: "testAgency1",
+      },
+    };
+    const res = {
+      sendStatus: function (reasonCode: number): number {
+        return reasonCode;
+      },
+    };
+
+    expect(await agencyHandler(req, res)).toBe(
+      StatusCodes.INTERNAL_SERVER_ERROR
+    );
+  });
 });

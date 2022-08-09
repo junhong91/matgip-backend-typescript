@@ -3,6 +3,7 @@ import { Request, Response, Router } from "express";
 
 import agencyService from "../services/agency-service";
 import { ClientClosedError } from "redis";
+import { client } from "src/infrastructure/config/redis/client";
 
 // Constants
 const router = Router();
@@ -18,7 +19,11 @@ export const paths = {
  * Get real estate agency information.
  */
 router.get(paths.get, agencyHandler);
-export async function agencyHandler(req: Request, res: Response) {
+export async function agencyHandler(
+  req: Request,
+  res: Response,
+  retries: number = 5
+) {
   const { agencyId } = req.params;
   if (!agencyId) return res.sendStatus(BAD_REQUEST);
 
@@ -26,7 +31,10 @@ export async function agencyHandler(req: Request, res: Response) {
     const agency = await agencyService.get(agencyId);
     return res.json({ agency });
   } catch (err) {
-    console.error(err);
+    if (err instanceof ClientClosedError && retries > 0) {
+      await client.connect();
+      return agencyHandler(req, res, retries - 1);
+    }
     return res.sendStatus(INTERNAL_SERVER_ERROR);
   }
 }
@@ -36,7 +44,11 @@ export async function agencyHandler(req: Request, res: Response) {
  */
 router.get(paths.getViews, agencyViewHandler);
 
-export async function agencyViewHandler(req: Request, res: Response) {
+export async function agencyViewHandler(
+  req: Request,
+  res: Response,
+  retries: number = 5
+) {
   const { agencyId } = req.params;
   if (!agencyId) return res.sendStatus(BAD_REQUEST);
 
@@ -44,7 +56,11 @@ export async function agencyViewHandler(req: Request, res: Response) {
     const agencyViews = await agencyService.getViews(agencyId);
     return res.json({ agencyViews });
   } catch (err) {
-    console.error(err);
+    console.log(err);
+    if (err instanceof ClientClosedError && retries > 0) {
+      await client.connect();
+      return agencyViewHandler(req, res, retries - 1);
+    }
     return res.sendStatus(INTERNAL_SERVER_ERROR);
   }
 }
@@ -55,7 +71,11 @@ export async function agencyViewHandler(req: Request, res: Response) {
  */
 router.get(paths.getLikes, agencyLikeHandler);
 
-export async function agencyLikeHandler(req: Request, res: Response) {
+export async function agencyLikeHandler(
+  req: Request,
+  res: Response,
+  retries: number = 5
+) {
   const { agencyId, userId } = req.params;
   if (!agencyId || !userId) return res.sendStatus(BAD_REQUEST);
 
@@ -64,6 +84,11 @@ export async function agencyLikeHandler(req: Request, res: Response) {
     res.json(isUserLikeAgency);
   } catch (err) {
     console.error(err);
+    if (err instanceof ClientClosedError && retries > 0) {
+      await client.connect();
+      return agencyLikeHandler(req, res, retries - 1);
+    }
+
     return res.sendStatus(INTERNAL_SERVER_ERROR);
   }
 }
